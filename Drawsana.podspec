@@ -9,7 +9,7 @@ Pod::Spec.new do |spec|
   spec.source       = { :git => 'https://github.com/asana/Drawsana.git', :tag => '0.12.0' }
   spec.source_files = 'Drawsana/**/*.swift'
 
-  spec.platform 	= :ios, '11.0'
+  spec.platform 	= :ios, '10.0'
 
   spec.swift_version = '5.2'
 end
