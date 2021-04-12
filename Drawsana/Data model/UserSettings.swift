@@ -45,16 +45,19 @@ public class UserSettings {
       delegate?.userSettings(self, didChangeFontSize: fontSize)
     }
   }
+  public var fontBackgroundColor: UIColor?
 
   init(
     strokeColor: UIColor?,
     fillColor: UIColor?,
+    fontBackgroundColor: UIColor,
     strokeWidth: CGFloat,
     fontName: String,
     fontSize: CGFloat)
   {
     self.strokeColor = strokeColor
     self.fillColor = fillColor
+    self.fontBackgroundColor = fontBackgroundColor
     self.strokeWidth = strokeWidth
     self.fontName = fontName
     self.fontSize = fontSize

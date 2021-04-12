@@ -39,6 +39,7 @@ public class DrawsanaView: UIView {
   public let userSettings = UserSettings(
     strokeColor: .blue,
     fillColor: .yellow,
+    fontBackgroundColor: .clear,
     strokeWidth: 20,
     fontName: "Helvetica Neue",
     fontSize: 24)

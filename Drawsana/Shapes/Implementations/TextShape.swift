@@ -10,7 +10,7 @@ import UIKit
 
 public class TextShape: Shape, ShapeSelectable {
   private enum CodingKeys: String, CodingKey {
-    case id, transform, text, fontName, fontSize, fillColor, type,
+    case id, transform, text, fontName, fontSize, fillColor, fontBackgroundColor, type,
       explicitWidth, boundingRect
   }
 
@@ -24,6 +24,7 @@ public class TextShape: Shape, ShapeSelectable {
   public var fontName: String = "Helvetica Neue"
   public var fontSize: CGFloat = 24
   public var fillColor: UIColor = .black
+  public var fontBackgroundColor: UIColor = .clear
   /// If user drags the text box to an exact width, we need to respect it instead
   /// of automatically sizing the text box to fit the text.
   public var explicitWidth: CGFloat?
@@ -54,6 +55,7 @@ public class TextShape: Shape, ShapeSelectable {
     fontName = try values.decode(String.self, forKey: .fontName)
     fontSize = try values.decode(CGFloat.self, forKey: .fontSize)
     fillColor = UIColor(hexString: try values.decode(String.self, forKey: .fillColor))
+    fontBackgroundColor = UIColor(hexString: try values.decode(String.self, forKey: .fontBackgroundColor))
     explicitWidth = try values.decodeIfPresent(CGFloat.self, forKey: .explicitWidth)
     boundingRect = try values.decodeIfPresent(CGRect.self, forKey: .boundingRect) ?? .zero
     transform = try values.decode(ShapeTransform.self, forKey: .transform)
@@ -70,6 +72,7 @@ public class TextShape: Shape, ShapeSelectable {
     try container.encode(text, forKey: .text)
     try container.encode(fontName, forKey: .fontName)
     try container.encode(fillColor.hexString, forKey: .fillColor)
+    try container.encode(fontBackgroundColor.hexString, forKey: .fontBackgroundColor)
     try container.encode(fontSize, forKey: .fontSize)
     try container.encodeIfPresent(explicitWidth, forKey: .explicitWidth)
     try container.encode(transform, forKey: .transform)
@@ -84,12 +87,14 @@ public class TextShape: Shape, ShapeSelectable {
       withAttributes: [
         .font: self.font,
         .foregroundColor: self.fillColor,
+        .backgroundColor: self.fontBackgroundColor,
       ])
     transform.end(context: context)
   }
 
   public func apply(userSettings: UserSettings) {
     fillColor = userSettings.strokeColor ?? .black
+    fontBackgroundColor = userSettings.fontBackgroundColor ?? .clear
     fontName = userSettings.fontName
     fontSize = userSettings.fontSize
   }
