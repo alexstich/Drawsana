@@ -46,14 +46,20 @@ public class TextShapeEditingView: UIView {
     textView.translatesAutoresizingMaskIntoConstraints = false
 
     deleteControlView.translatesAutoresizingMaskIntoConstraints = false
-    deleteControlView.backgroundColor = .red
-
+    deleteControlView.backgroundColor = .red.withAlphaComponent(0.5)
+    deleteControlView.layer.cornerRadius = 3
+    deleteControlView.clipsToBounds = true
+    
     resizeAndRotateControlView.translatesAutoresizingMaskIntoConstraints = false
-    resizeAndRotateControlView.backgroundColor = .white
-
+    resizeAndRotateControlView.backgroundColor = .white.withAlphaComponent(0.5)
+    resizeAndRotateControlView.layer.cornerRadius = 3
+    resizeAndRotateControlView.clipsToBounds = true
+    
     changeWidthControlView.translatesAutoresizingMaskIntoConstraints = false
-    changeWidthControlView.backgroundColor = .yellow
-
+    changeWidthControlView.backgroundColor = .yellow.withAlphaComponent(0.5)
+    changeWidthControlView.layer.cornerRadius = 3
+    changeWidthControlView.clipsToBounds = true
+    
     addSubview(textView)
 
     NSLayoutConstraint.activate([
@@ -85,8 +91,8 @@ public class TextShapeEditingView: UIView {
   public func addStandardControls() {
     addControl(dragActionType: .delete, view: deleteControlView) { (textView, deleteControlView) in
       NSLayoutConstraint.activate(deprioritize([
-        deleteControlView.widthAnchor.constraint(equalToConstant: 36),
-        deleteControlView.heightAnchor.constraint(equalToConstant: 36),
+        deleteControlView.widthAnchor.constraint(equalToConstant: 26),
+        deleteControlView.heightAnchor.constraint(equalToConstant: 26),
         deleteControlView.rightAnchor.constraint(equalTo: textView.leftAnchor),
         deleteControlView.bottomAnchor.constraint(equalTo: textView.topAnchor, constant: -3),
       ]))
@@ -94,8 +100,8 @@ public class TextShapeEditingView: UIView {
 
     addControl(dragActionType: .resizeAndRotate, view: resizeAndRotateControlView) { (textView, resizeAndRotateControlView) in
       NSLayoutConstraint.activate(deprioritize([
-        resizeAndRotateControlView.widthAnchor.constraint(equalToConstant: 36),
-        resizeAndRotateControlView.heightAnchor.constraint(equalToConstant: 36),
+        resizeAndRotateControlView.widthAnchor.constraint(equalToConstant: 26),
+        resizeAndRotateControlView.heightAnchor.constraint(equalToConstant: 26),
         resizeAndRotateControlView.leftAnchor.constraint(equalTo: textView.rightAnchor, constant: 5),
         resizeAndRotateControlView.topAnchor.constraint(equalTo: textView.bottomAnchor, constant: 4),
       ]))
@@ -103,8 +109,8 @@ public class TextShapeEditingView: UIView {
 
     addControl(dragActionType: .changeWidth, view: changeWidthControlView) { (textView, changeWidthControlView) in
       NSLayoutConstraint.activate(deprioritize([
-        changeWidthControlView.widthAnchor.constraint(equalToConstant: 36),
-        changeWidthControlView.heightAnchor.constraint(equalToConstant: 36),
+        changeWidthControlView.widthAnchor.constraint(equalToConstant: 26),
+        changeWidthControlView.heightAnchor.constraint(equalToConstant: 26),
         changeWidthControlView.leftAnchor.constraint(equalTo: textView.rightAnchor, constant: 5),
         changeWidthControlView.bottomAnchor.constraint(equalTo: textView.topAnchor, constant: -4),
       ]))
