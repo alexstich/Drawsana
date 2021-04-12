@@ -46,17 +46,17 @@ public class TextShapeEditingView: UIView {
     textView.translatesAutoresizingMaskIntoConstraints = false
 
     deleteControlView.translatesAutoresizingMaskIntoConstraints = false
-    deleteControlView.backgroundColor = .red.withAlphaComponent(0.5)
+    deleteControlView.backgroundColor = UIColor.red.withAlphaComponent(0.5)
     deleteControlView.layer.cornerRadius = 3
     deleteControlView.clipsToBounds = true
     
     resizeAndRotateControlView.translatesAutoresizingMaskIntoConstraints = false
-    resizeAndRotateControlView.backgroundColor = .white.withAlphaComponent(0.5)
+    resizeAndRotateControlView.backgroundColor = UIColor.white.withAlphaComponent(0.5)
     resizeAndRotateControlView.layer.cornerRadius = 3
     resizeAndRotateControlView.clipsToBounds = true
     
     changeWidthControlView.translatesAutoresizingMaskIntoConstraints = false
-    changeWidthControlView.backgroundColor = .yellow.withAlphaComponent(0.5)
+    changeWidthControlView.backgroundColor = UIColor.yellow.withAlphaComponent(0.5)
     changeWidthControlView.layer.cornerRadius = 3
     changeWidthControlView.clipsToBounds = true
     
