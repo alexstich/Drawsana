@@ -47,18 +47,40 @@ public class TextShapeEditingView: UIView {
 
     deleteControlView.translatesAutoresizingMaskIntoConstraints = false
     deleteControlView.backgroundColor = UIColor.red.withAlphaComponent(0.5)
+    deleteControlView.layer.borderColor = UIColor.gray.cgColor
+    deleteControlView.layer.borderWidth = 1
     deleteControlView.layer.cornerRadius = 3
     deleteControlView.clipsToBounds = true
+    deleteControlView.add
+    
+    let imageDelete = UIImage(named: "icon_close")
+    let imageViewDelete = UIImageView(image: setColor(image: imageDelete!, UIColor.white))
+    imageViewDelete.alpha = 0.5
+    deleteControlView.addSubview(imageViewDelete)
     
     resizeAndRotateControlView.translatesAutoresizingMaskIntoConstraints = false
     resizeAndRotateControlView.backgroundColor = UIColor.white.withAlphaComponent(0.5)
+    resizeAndRotateControlView.layer.borderColor = UIColor.gray.cgColor
+    resizeAndRotateControlView.layer.borderWidth = 1
     resizeAndRotateControlView.layer.cornerRadius = 3
     resizeAndRotateControlView.clipsToBounds = true
     
+    let imageResizeAndRotate = UIImage(named: "icon_rotate")
+    let imageViewResizeAndRotate = UIImageView(image: setColor(image: imageResizeAndRotate!, UIColor.white))
+    imageViewResizeAndRotate.alpha = 0.5
+    resizeAndRotateControlView.addSubview(imageViewResizeAndRotate)
+    
     changeWidthControlView.translatesAutoresizingMaskIntoConstraints = false
     changeWidthControlView.backgroundColor = UIColor.yellow.withAlphaComponent(0.5)
+    changeWidthControlView.layer.borderColor = UIColor.gray.cgColor
+    changeWidthControlView.layer.borderWidth = 1
     changeWidthControlView.layer.cornerRadius = 3
     changeWidthControlView.clipsToBounds = true
+    
+    let imageChangeWidth = UIImage(named: "icon_expand")
+    let imageViewChangeWidth = UIImageView(image: setColor(image: imageChangeWidth!, UIColor.white))
+    imageViewChangeWidth.alpha = 0.5
+    changeWidthControlView.addSubview(imageViewChangeWidth)
     
     addSubview(textView)
 
@@ -132,6 +154,26 @@ public class TextShapeEditingView: UIView {
     }
     return nil
   }
+    
+    private func setColor(image: UIImage, _ newColor: UIColor) -> UIImage
+    {
+        UIGraphicsBeginImageContextWithOptions(image.size, false, image.scale)
+        newColor.setFill()
+        
+        let context = UIGraphicsGetCurrentContext()
+        context?.translateBy(x: 0, y: image.size.height)
+        context?.scaleBy(x: 1.0, y: -1.0)
+        context?.setBlendMode(CGBlendMode.normal)
+        
+        let rect = CGRect(origin: .zero, size: CGSize(width: image.size.width, height: image.size.height))
+        context?.clip(to: rect, mask: image.cgImage!)
+        context?.fill(rect)
+        
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return newImage!
+    }
 }
 
 private func deprioritize(_ constraints: [NSLayoutConstraint]) -> [NSLayoutConstraint] {
