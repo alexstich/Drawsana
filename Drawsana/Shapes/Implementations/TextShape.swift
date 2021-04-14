@@ -82,7 +82,11 @@ public class TextShape: Shape, ShapeSelectable {
   public func render(in context: CGContext) {
     if isBeingEdited { return }
     transform.begin(context: context)
-    (self.text as NSString).draw(
+    var trimmedString = self.text.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+    if trimmedString != "" && trimmedString != "\n" && trimmedString != " " {
+        trimmedString = " " + trimmedString + " "
+    }
+    (trimmedString as NSString).draw(
       in: CGRect(origin: boundingRect.origin, size: self.boundingRect.size),
       withAttributes: [
         .font: self.font,
