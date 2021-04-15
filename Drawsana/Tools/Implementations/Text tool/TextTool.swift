@@ -201,6 +201,7 @@ public class TextTool: NSObject, DrawingTool {
   private func finishEditing(context: ToolOperationContext) {
     applyEditTextOperationIfTextHasChanged(context: context)
     selectedShape?.isBeingEdited = false
+    context.toolSettings.selectedShape = nil
     context.toolSettings.interactiveView = nil
     context.toolSettings.isPersistentBufferDirty = true
   }
@@ -231,7 +232,7 @@ public class TextTool: NSObject, DrawingTool {
     guard let shape = selectedShape else { return }
     shape.boundingRect = computeBounds()
     // Shape jumps a little after editing unless we add this fudge factor
-    shape.boundingRect.origin.x += 2
+//    shape.boundingRect.origin.x += 2
     updateTextView()
   }
 
@@ -243,9 +244,10 @@ public class TextTool: NSObject, DrawingTool {
     }
     editingView.textView.font = shape.font
     editingView.textView.textColor = shape.fillColor
+    editingView.textView.backgroundColor = shape.fontBackgroundColor
     editingView.bounds = shape.boundingRect
     // Fudge factor to make shape and text view line up exactly
-    editingView.bounds.size.width += 3
+//    editingView.bounds.size.width += 3
     editingView.transform = CGAffineTransform(
       translationX: -shape.boundingRect.size.width / 2,
       y: -shape.boundingRect.size.height / 2
@@ -304,7 +306,7 @@ public class TextTool: NSObject, DrawingTool {
   private func makeTextView() -> TextShapeEditingView {
     let textView = UITextView()
     textView.autoresizingMask = [.flexibleRightMargin, .flexibleBottomMargin]
-    textView.textContainerInset = .zero
+    textView.textContainerInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
     textView.contentInset = .zero
     textView.isScrollEnabled = false
     textView.clipsToBounds = true
