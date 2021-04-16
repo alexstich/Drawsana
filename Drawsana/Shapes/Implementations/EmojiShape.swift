@@ -63,8 +63,5 @@ public class EmojiShape: Shape, ShapeSelectable {
         transform.end(context: context)
     }
     
-    public func apply(userSettings: UserSettings)
-    {
-        fontSize = userSettings.fontSize
-    }
+    public func apply(userSettings: UserSettings){}
 }
