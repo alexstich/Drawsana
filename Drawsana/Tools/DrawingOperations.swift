@@ -136,9 +136,9 @@ public struct EditTextOperation: DrawingOperation {
  */
 public struct EditEmojiOperation: DrawingOperation
 {
-    let shape: TextShape
+    let shape: EmojiShape
     
-    public init(shape: TextShape)
+    public init(shape: EmojiShape)
     {
         self.shape = shape
     }
