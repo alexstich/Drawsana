@@ -1,5 +1,5 @@
 //
-//  DragHandler.swift
+//  TextDragHandler.swift
 //  Drawsana
 //
 //  Created by Steve Landey on 8/8/18.
@@ -8,14 +8,13 @@
 
 import CoreGraphics
 
-class DragHandler {
+class TextDragHandler
+{
+    weak var textTool: TextTool?
   let shape: TextShape
-  weak var textTool: TextTool?
   var startPoint: CGPoint = .zero
 
-  init(
-    shape: TextShape,
-    textTool: TextTool)
+  init(shape: TextShape, textTool: TextTool)
   {
     self.shape = shape
     self.textTool = textTool
@@ -39,7 +38,7 @@ class DragHandler {
 }
 
 /// User is dragging the text itself to a new location
-class MoveHandler: DragHandler {
+class MoveHandler: TextDragHandler {
   private var originalTransform: ShapeTransform
 
   override init(
@@ -73,7 +72,7 @@ class MoveHandler: DragHandler {
 
 /// User is dragging the lower-right handle to change the size and rotation
 /// of the text box
-class ResizeAndRotateHandler: DragHandler {
+class ResizeAndRotateHandler: TextDragHandler {
   private var originalTransform: ShapeTransform
 
   override init(
@@ -117,7 +116,7 @@ class ResizeAndRotateHandler: DragHandler {
 
 /// User is dragging the middle-right handle to change the width of the text
 /// box
-class ChangeWidthHandler: DragHandler {
+class ChangeWidthHandler: TextDragHandler {
   private var originalWidth: CGFloat?
   private var originalBoundingRect: CGRect = .zero
 

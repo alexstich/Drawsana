@@ -48,13 +48,13 @@ public class TextTool: NSObject, DrawingTool {
   // MARK: Internal state
 
   /// The text tool has 3 different behaviors on drag depending on where your
-  /// touch starts. See `DragHandler.swift` for their implementations.
-  private var dragHandler: DragHandler?
+  /// touch starts. See `TextDragHandler.swift` for their implementations.
+  private var dragHandler: TextDragHandler?
   private var selectedShape: TextShape?
   private var originalText = ""
   private var maxWidth: CGFloat = 320  // updated from drawing.size
   private weak var shapeUpdater: DrawsanaViewShapeUpdating?
-  // internal for use by DragHandler subclasses
+  // internal for use by TextDragHandler subclasses
   internal lazy var editingView: TextShapeEditingView = makeTextView()
 
   public init(delegate: TextToolDelegate? = nil) {
