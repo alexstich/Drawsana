@@ -125,6 +125,41 @@ public struct EditTextOperation: DrawingOperation {
 }
 
 /**
+ Edit the text of a `EmojiShape`. Undoing sets the text back to the original
+ value.
+ 
+ If this operation immediately follows an `AddShapeOperation` for the exact
+ same text shape, and `originalText` is empty, then this operation declines to
+ be added to the undo stack and instead causes the `AddShapeOperation` to simply
+ add the shape with the new text value. This means that we avoid having an
+ "add empty text shape" operation in the undo stack.
+ */
+public struct EditEmojiOperation: DrawingOperation
+{
+    let shape: TextShape
+    
+    public init(shape: TextShape)
+    {
+        self.shape = shape
+    }
+    
+    public func shouldAdd(to operationStack: DrawingOperationStack) -> Bool
+    {
+        return true
+    }
+    
+    public func apply(drawing: Drawing)
+    {
+        drawing.update(shape: shape)
+    }
+    
+    public func revert(drawing: Drawing)
+    {
+        drawing.update(shape: shape)
+    }
+}
+
+/**
  Change the user-specified width of a text shape
  */
 public struct ChangeExplicitWidthOperation: DrawingOperation {
