@@ -313,18 +313,23 @@ public class TextTool: NSObject, DrawingTool {
     textView.autocorrectionType = .no
     textView.backgroundColor = .clear
     textView.delegate = self
+    
     let editingView = TextShapeEditingView(textView: textView)
+    
     if let delegate = delegate {
       delegate.textToolWillUseEditingView(editingView)
     } else {
       editingView.addStandardControls()
     }
+    
     return editingView
   }
 }
 
-extension TextTool: UITextViewDelegate {
-  public func textViewDidChange(_ textView: UITextView) {
+extension TextTool: UITextViewDelegate
+{
+  public func textViewDidChange(_ textView: UITextView)
+  {
     guard let shape = selectedShape else { return }
     
     if textView.markedTextRange == nil {

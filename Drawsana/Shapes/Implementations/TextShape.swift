@@ -80,27 +80,27 @@ public class TextShape: Shape, ShapeSelectable {
   }
 
     public func render(in context: CGContext) {
-      
-      if isBeingEdited { return }
-      
-      transform.begin(context: context)
-      
-      let fullRect = CGRect(origin: boundingRect.origin, size: self.boundingRect.size)
-      
-      context.setFillColor(fontBackgroundColor.cgColor)
-      context.addRect(fullRect)
-      context.fillPath()
-      
-      let stringRect = CGRect(origin: CGPoint(x: boundingRect.origin.x + 10, y: boundingRect.origin.y + 5), size: self.boundingRect.size)
-      
-      (self.text as NSString).draw(
-        in: stringRect,
-        withAttributes: [
-          .font: self.font,
-          .foregroundColor: self.fillColor
-        ])
-      
-      transform.end(context: context)
+        
+        if isBeingEdited { return }
+        
+        transform.begin(context: context)
+        
+        let fullRect = CGRect(origin: boundingRect.origin, size: self.boundingRect.size)
+        
+        context.setFillColor(fontBackgroundColor.cgColor)
+        context.addRect(fullRect)
+        context.fillPath()
+        
+        let stringRect = CGRect(origin: CGPoint(x: boundingRect.origin.x + 10, y: boundingRect.origin.y + 5), size: CGSize(width: self.boundingRect.size.width - 10, height: self.boundingRect.size.height - 5))
+        
+        (self.text as NSString).draw(
+            in: stringRect,
+            withAttributes: [
+                .font: self.font,
+                .foregroundColor: self.fillColor
+            ])
+        
+        transform.end(context: context)
     }
 
   public func apply(userSettings: UserSettings) {
