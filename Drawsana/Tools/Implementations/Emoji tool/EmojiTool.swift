@@ -8,15 +8,15 @@
 import UIKit
 
 public protocol EmojiToolDelegate: AnyObject {
-    /// Given the point where the user tapped, return the point where a text
-    /// shape should be created. You might want to set it to a specific point, or
-    /// make sure it's above the keyboard.
-    func textToolPointForNewText(tappedPoint: CGPoint) -> CGPoint
-    
-    /// User tapped away from the active text shape. If you give users access to
-    /// the selection tool, you might want to set it as the active tool at this
-    /// point.
-    func textToolDidTapAway(tappedPoint: CGPoint)
+//    /// Given the point where the user tapped, return the point where a text
+//    /// shape should be created. You might want to set it to a specific point, or
+//    /// make sure it's above the keyboard.
+//    func textToolPointForNewText(tappedPoint: CGPoint) -> CGPoint
+//
+//    /// User tapped away from the active text shape. If you give users access to
+//    /// the selection tool, you might want to set it as the active tool at this
+//    /// point.
+//    func textToolDidTapAway(tappedPoint: CGPoint)
     
     /// The text tool is about to present a text editing view. You may configure
     /// it however you like. If you're just starting out, you probably want to
@@ -94,14 +94,12 @@ public class EmojiTool: NSObject, DrawingTool {
     {
         if let dragActionType = editingView.getDragActionType(point: point), case .delete = dragActionType {
             applyRemoveShapeOperation(context: context)
-            delegate?.textToolDidTapAway(tappedPoint: point)
         } else if shape.hitTest(point: point) {
             // TODO: Forward tap to editingView.textView somehow, or manually set
             // the cursor point
         } else {
             finishEditing(context: context)
             selectedShape = nil
-            delegate?.textToolDidTapAway(tappedPoint: point)
         }
         
         return
@@ -112,13 +110,6 @@ public class EmojiTool: NSObject, DrawingTool {
         if let tappedShape = context.drawing.getShape(of: EmojiShape.self, at: point) {
             beginEditing(shape: tappedShape, context: context)
             context.toolSettings.isPersistentBufferDirty = true
-        } else {
-            let newShape = EmojiShape()
-            newShape.apply(userSettings: context.userSettings)
-            self.selectedShape = newShape
-            newShape.transform.translation = delegate?.textToolPointForNewText(tappedPoint: point) ?? point
-            beginEditing(shape: newShape, context: context)
-            context.operationStack.apply(operation: AddShapeOperation(shape: newShape))
         }
     }
     
@@ -206,7 +197,6 @@ public class EmojiTool: NSObject, DrawingTool {
         
         // Prepare interactive editing view
         context.toolSettings.interactiveView = editingView
-        editingView.becomeFirstResponder()
     }
     
     /// If shape text has changed, notify operation stack so that undo works
@@ -257,6 +247,7 @@ public class EmojiTool: NSObject, DrawingTool {
         if editingView.textView.markedTextRange == nil {
             editingView.textView.text = shape.text
         }
+        editingView.textView.font = UIFont(name: "Helvetica Neue", size: shape.fontSize)!
         editingView.bounds = shape.boundingRect
         // Fudge factor to make shape and text view line up exactly
         //    editingView.bounds.size.width += 3
@@ -320,7 +311,6 @@ public class EmojiTool: NSObject, DrawingTool {
         textView.clipsToBounds = true
         textView.autocorrectionType = .no
         textView.backgroundColor = .clear
-//        textView.delegate = self
         
         let editingView = EmojiShapeEditingView(textView: textView)
         
@@ -334,14 +324,3 @@ public class EmojiTool: NSObject, DrawingTool {
         return editingView
     }
 }
-
-//extension EmojiTool: UITextViewDelegate {
-//    public func textViewDidBeginEditing(_ textView: UITextView) {
-//        selectedShape?.isBeingEdited = true
-//    }
-//
-//    public func textViewShouldEndEditing(_ textView: UITextView) -> Bool {
-//        selectedShape?.isBeingEdited = false
-//        return true
-//    }
-//}
