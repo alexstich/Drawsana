@@ -197,6 +197,7 @@ public class EmojiTool: NSObject, DrawingTool {
         
         // Prepare interactive editing view
         context.toolSettings.interactiveView = editingView
+        context.operationStack.apply(operation: EditEmojiOperation(shape: shape))
     }
     
     /// If shape text has changed, notify operation stack so that undo works
