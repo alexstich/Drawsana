@@ -70,6 +70,7 @@ public class EmojiTool: NSObject, DrawingTool {
         self.shapeUpdater = shapeUpdater
         if let shape = shape as? EmojiShape {
             beginEditing(shape: shape, context: context)
+            context.operationStack.apply(operation: AddShapeOperation(shape: shape))
         }
     }
     
