@@ -195,7 +195,7 @@ public class DrawsanaView: UIView {
 
     let selectionLayer = CAShapeLayer()
     selectionLayer.strokeColor = UIColor.black.cgColor
-    selectionLayer.lineWidth = 2
+    selectionLayer.lineWidth = 1
     selectionLayer.lineDashPattern = [4, 4]
     selectionLayer.fillColor = nil
     selectionLayer.frame = selectionIndicatorView.bounds
