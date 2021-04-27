@@ -237,232 +237,236 @@ public class DrawsanaView: UIView {
     }
   }
 
-  /// Render the drawing on top of an image, using that image's size. Shapes are
-  /// re-scaled to match the resolution of the target without artifacts.
-  /// The scale parameter defines wether image is rendered at the device's native resolution (scale = 0.0)
-  /// or to scale it to the image size (scale 1.0). Use scale = 0.0 when rendering to display on screen and
-  /// 1.0 if you are saving the image to a file
-    public func render(over image: UIImage?, scale:CGFloat = 0.0) -> UIImage? {
-    let size = image?.size ?? drawing.size
-    let shapesImage = render(size: size, scale: scale)
-    return DrawsanaUtilities.renderImage(size: size, scale: scale) { (context: CGContext) -> Void in
-      image?.draw(at: .zero)
-      shapesImage?.draw(at: .zero)
+    /// Render the drawing on top of an image, using that image's size. Shapes are
+    /// re-scaled to match the resolution of the target without artifacts.
+    /// The scale parameter defines wether image is rendered at the device's native resolution (scale = 0.0)
+    /// or to scale it to the image size (scale 1.0). Use scale = 0.0 when rendering to display on screen and
+    /// 1.0 if you are saving the image to a file
+    public func render(over image: UIImage?, scale: CGFloat = 0.0) -> UIImage? {
+        let size = image?.size ?? drawing.size
+        let shapesImage = render(size: size, scale: scale)
+        return DrawsanaUtilities.renderImage(size: size, scale: scale) { [weak image, weak shapesImage] (context: CGContext) -> Void in
+            image?.draw(at: .zero)
+            shapesImage?.draw(at: .zero)
+        }
     }
-  }
-
-  /// Render the drawing. If you pass a size, shapes are re-scaled to be full
-  /// resolution at that size, otherwise the view size is used.
-    public func render(size: CGSize? = nil, scale:CGFloat = 0.0) -> UIImage? {
-    let size = size ?? drawing.size
-        return DrawsanaUtilities.renderImage(size: size, scale:scale) { (context: CGContext) -> Void in
-      context.saveGState()
-      context.scaleBy(
-        x: size.width / self.drawing.size.width,
-        y: size.height / self.drawing.size.height)
-      for shape in self.drawing.shapes {
-        shape.render(in: context)
-      }
-      context.restoreGState()
+    
+    /// Render the drawing. If you pass a size, shapes are re-scaled to be full
+    /// resolution at that size, otherwise the view size is used.
+    public func render(size: CGSize? = nil, scale: CGFloat = 0.0) -> UIImage? {
+        let size = size ?? drawing.size
+        return DrawsanaUtilities.renderImage(size: size, scale: scale) { [weak self] (context: CGContext) -> Void in
+            if let self = self {
+                context.saveGState()
+                context.scaleBy(
+                    x: size.width / self.drawing.size.width,
+                    y: size.height / self.drawing.size.height)
+                for shape in self.drawing.shapes {
+                    shape.render(in: context)
+                }
+                context.restoreGState()
+            }
+        }
     }
-  }
-
-  // MARK: Gesture recognizers
-
-  @objc private func didPan(sender: ImmediatePanGestureRecognizer) {
-    autoreleasepool { _didPan(sender: sender) }
-  }
-
-  private func _didPan(sender: ImmediatePanGestureRecognizer) {
-    guard let tool = tool else { return }
-
-    let updateUncommittedShapeBuffers: () -> Void = {
-      self.transientBufferWithShapeInProgress = DrawsanaUtilities.renderImage(size: self.drawing.size) {
-        self.transientBuffer?.draw(at: .zero)
-        self.tool?.renderShapeInProgress(transientContext: $0)
-      }
-      self.drawingContentView.layer.contents = self.transientBufferWithShapeInProgress?.cgImage
-      if self.tool?.isProgressive == true {
-        self.transientBuffer = self.transientBufferWithShapeInProgress
-      }
+    
+    // MARK: Gesture recognizers
+    
+    @objc private func didPan(sender: ImmediatePanGestureRecognizer) {
+        autoreleasepool { _didPan(sender: sender) }
     }
-
-    let point = sender.location(in: self)
-    switch sender.state {
-    case .began:
-      if let persistentBuffer = persistentBuffer, let cgImage = persistentBuffer.cgImage {
-        transientBuffer = UIImage(
-          cgImage: cgImage,
-          scale: persistentBuffer.scale,
-          orientation: persistentBuffer.imageOrientation)
-      } else {
-        transientBuffer = nil
-      }
-      tool.handleDragStart(context: toolOperationContext, point: point)
-      delegate?.drawsanaView(self, didStartDragWith: tool)
-      updateUncommittedShapeBuffers()
-    case .changed:
-      tool.handleDragContinue(context: toolOperationContext, point: point, velocity: sender.velocity ?? .zero)
-      updateUncommittedShapeBuffers()
-    case .ended:
-      if sender.hasExceededTapThreshold {
-        tool.handleDragEnd(context: toolOperationContext, point: point)
-        delegate?.drawsanaView(self, didEndDragWith: tool)
-      } else {
-        tool.handleDragCancel(context: toolOperationContext, point: point)
-        tool.handleTap(context: toolOperationContext, point: point)
-      }
-      reapplyLayerContents()
-    case .failed, .cancelled:
-      tool.handleDragCancel(context: toolOperationContext, point: point)
-      reapplyLayerContents()
-    case .possible:
-      break // do nothing
-    @unknown default:
-      break
+    
+    private func _didPan(sender: ImmediatePanGestureRecognizer) {
+        guard let tool = tool else { return }
+        
+        let updateUncommittedShapeBuffers: () -> Void = {
+            self.transientBufferWithShapeInProgress = DrawsanaUtilities.renderImage(size: self.drawing.size) { [weak self] in
+                self?.transientBuffer?.draw(at: .zero)
+                self?.tool?.renderShapeInProgress(transientContext: $0)
+            }
+            self.drawingContentView.layer.contents = self.transientBufferWithShapeInProgress?.cgImage
+            if self.tool?.isProgressive == true {
+                self.transientBuffer = self.transientBufferWithShapeInProgress
+            }
+        }
+        
+        let point = sender.location(in: self)
+        switch sender.state {
+        case .began:
+            if let persistentBuffer = persistentBuffer, let cgImage = persistentBuffer.cgImage {
+                transientBuffer = UIImage(
+                    cgImage: cgImage,
+                    scale: persistentBuffer.scale,
+                    orientation: persistentBuffer.imageOrientation)
+            } else {
+                transientBuffer = nil
+            }
+            tool.handleDragStart(context: toolOperationContext, point: point)
+            delegate?.drawsanaView(self, didStartDragWith: tool)
+            updateUncommittedShapeBuffers()
+        case .changed:
+            tool.handleDragContinue(context: toolOperationContext, point: point, velocity: sender.velocity ?? .zero)
+            updateUncommittedShapeBuffers()
+        case .ended:
+            if sender.hasExceededTapThreshold {
+                tool.handleDragEnd(context: toolOperationContext, point: point)
+                delegate?.drawsanaView(self, didEndDragWith: tool)
+            } else {
+                tool.handleDragCancel(context: toolOperationContext, point: point)
+                tool.handleTap(context: toolOperationContext, point: point)
+            }
+            reapplyLayerContents()
+        case .failed, .cancelled:
+            tool.handleDragCancel(context: toolOperationContext, point: point)
+            reapplyLayerContents()
+        case .possible:
+            break // do nothing
+        @unknown default:
+            break
+        }
+        
+        applyToolSettingsChanges()
     }
-
-    applyToolSettingsChanges()
-  }
-
-  // MARK: Making stuff show up
-
-  /// If a tool made changes to toolSettings to notify us that the buffer needs
-  /// to be redrawn or the selection has moved, act on those changes
-  private func applyToolSettingsChanges() {
-    if toolSettings.isPersistentBufferDirty {
-      redrawAbsolutelyEverything()
-      toolSettings.isPersistentBufferDirty = false
+    
+    // MARK: Making stuff show up
+    
+    /// If a tool made changes to toolSettings to notify us that the buffer needs
+    /// to be redrawn or the selection has moved, act on those changes
+    private func applyToolSettingsChanges() {
+        if toolSettings.isPersistentBufferDirty {
+            redrawAbsolutelyEverything()
+            toolSettings.isPersistentBufferDirty = false
+        }
+        applySelectionViewState()
     }
-    applySelectionViewState()
-  }
-
-  private func reapplyLayerContents() {
-    self.drawingContentView.layer.contents = persistentBuffer?.cgImage
-  }
-
-  private func applySelectionViewState() {
-    guard let shape = toolSettings.selectedShape else {
-      selectionIndicatorView.isHidden = true
-      return
+    
+    private func reapplyLayerContents() {
+        self.drawingContentView.layer.contents = persistentBuffer?.cgImage
     }
-
-    // Warning: hand-wavy math ahead
-
-    // First, get the size and bounding rect position of the selected shape
-    var selectionBounds = shape.boundingRect.insetBy(
-      dx: selectionIndicatorInset.x,
-      dy: selectionIndicatorInset.y)
-    let offset = selectionBounds.origin
-
-    // Next, we're going to remove the position from the bounding rect so we
-    // can use it as UIView.bounds.
-    selectionBounds.origin = .zero
-    selectionIndicatorView.bounds = selectionBounds
-
-    /**
-     Now for the hand-wavy part. We're positioning a UIView using `transform`
-     and `bounds`, NOT `frame`! It is not valid to set both `transform` and
-     `frame` at the same time. (https://developer.apple.com/documentation/uikit/uiview/1622459-transform)
-
-     Unfortunately, this means that we're now positioning relative to the
-     parent layer's anchor point at (0.5, 0.5) in the middle of the view,
-     rather than the upper left of the view.
-
-     Shapes are positioned using BOTH `boundingRect` AND `transform`! So we need
-     to add `offset` from above with `shape.transform.translation` to arrive
-     at the right final translation.
-     */
-    selectionIndicatorView.transform = ShapeTransform(
-      translation: (
-        // figure out where the shape is in space
-        offset + shape.transform.translation +
-        // Account for the coordinate system being anchored in the middle
-        CGPoint(x: -bounds.size.width * selectionIndicatorAnchorPointOffset.x, y: -bounds.size.height * selectionIndicatorAnchorPointOffset.y) +
-        // We've just moved the CENTER of the selection view to the UPPER LEFT
-        // of the shape, so adjust by half the selection size:
-        CGPoint(x: selectionBounds.size.width / 2, y: selectionBounds.size.height / 2)),
-      rotation: shape.transform.rotation,
-      scale: shape.transform.scale).affineTransform
-    selectionIndicatorView.isHidden = false
-
-    selectionIndicatorViewShapeLayer.frame = selectionIndicatorView.bounds
-    selectionIndicatorViewShapeLayer.path = UIBezierPath(rect: selectionIndicatorView.bounds).cgPath
-  }
-
-  private func redrawAbsolutelyEverything() {
-    persistentBuffer = DrawsanaUtilities.renderImage(size: drawing.size) {
-      for shape in self.drawing.shapes {
-        shape.render(in: $0)
-      }
+    
+    private func applySelectionViewState() {
+        guard let shape = toolSettings.selectedShape else {
+            selectionIndicatorView.isHidden = true
+            return
+        }
+        
+        // Warning: hand-wavy math ahead
+        
+        // First, get the size and bounding rect position of the selected shape
+        var selectionBounds = shape.boundingRect.insetBy(
+            dx: selectionIndicatorInset.x,
+            dy: selectionIndicatorInset.y)
+        let offset = selectionBounds.origin
+        
+        // Next, we're going to remove the position from the bounding rect so we
+        // can use it as UIView.bounds.
+        selectionBounds.origin = .zero
+        selectionIndicatorView.bounds = selectionBounds
+        
+        /**
+         Now for the hand-wavy part. We're positioning a UIView using `transform`
+         and `bounds`, NOT `frame`! It is not valid to set both `transform` and
+         `frame` at the same time. (https://developer.apple.com/documentation/uikit/uiview/1622459-transform)
+         
+         Unfortunately, this means that we're now positioning relative to the
+         parent layer's anchor point at (0.5, 0.5) in the middle of the view,
+         rather than the upper left of the view.
+         
+         Shapes are positioned using BOTH `boundingRect` AND `transform`! So we need
+         to add `offset` from above with `shape.transform.translation` to arrive
+         at the right final translation.
+         */
+        selectionIndicatorView.transform = ShapeTransform(
+            translation: (
+                // figure out where the shape is in space
+                offset + shape.transform.translation +
+                    // Account for the coordinate system being anchored in the middle
+                    CGPoint(x: -bounds.size.width * selectionIndicatorAnchorPointOffset.x, y: -bounds.size.height * selectionIndicatorAnchorPointOffset.y) +
+                    // We've just moved the CENTER of the selection view to the UPPER LEFT
+                    // of the shape, so adjust by half the selection size:
+                    CGPoint(x: selectionBounds.size.width / 2, y: selectionBounds.size.height / 2)),
+            rotation: shape.transform.rotation,
+            scale: shape.transform.scale).affineTransform
+        selectionIndicatorView.isHidden = false
+        
+        selectionIndicatorViewShapeLayer.frame = selectionIndicatorView.bounds
+        selectionIndicatorViewShapeLayer.path = UIBezierPath(rect: selectionIndicatorView.bounds).cgPath
     }
-    reapplyLayerContents()
-  }
+    
+    private func redrawAbsolutelyEverything() {
+        persistentBuffer = DrawsanaUtilities.renderImage(size: drawing.size) { [weak self] in
+            if let self = self {
+                for shape in self.drawing.shapes {
+                    shape.render(in: $0)
+                }
+            }
+        }
+        reapplyLayerContents()
+    }
 }
 
 // MARK: DrawsanaViewShapeUpdating implementation
 
 extension DrawsanaView: DrawsanaViewShapeUpdating {
-  /// Rerender all shapes from scratch. Very expensive for drawings with many shapes.
-  public func rerenderAllShapesInefficiently() {
-    redrawAbsolutelyEverything()
-    applySelectionViewState()
-  }
+    /// Rerender all shapes from scratch. Very expensive for drawings with many shapes.
+    public func rerenderAllShapesInefficiently() {
+        redrawAbsolutelyEverything()
+        applySelectionViewState()
+    }
 }
 
 // MARK: Delegate implementations
 
 extension DrawsanaView: DrawingDelegate {
-  func drawingDidAddShape(_ shape: Shape) {
-    persistentBuffer = DrawsanaUtilities.renderImage(size: drawing.size) {
-      self.persistentBuffer?.draw(at: .zero)
-      shape.render(in: $0)
+    func drawingDidAddShape(_ shape: Shape) {
+        persistentBuffer = DrawsanaUtilities.renderImage(size: drawing.size) { [weak self, weak shape] in
+            self?.persistentBuffer?.draw(at: .zero)
+            shape?.render(in: $0)
+        }
+        reapplyLayerContents()
     }
-    reapplyLayerContents()
-  }
-
-  func drawingDidUpdateShape(_ shape: Shape) {
-    redrawAbsolutelyEverything()
-    applyToolSettingsChanges()
-  }
-
-  func drawingDidRemoveShape(_ shape: Shape) {
-    redrawAbsolutelyEverything()
-    if shape === toolSettings.selectedShape {
-      toolSettings.selectedShape = nil
-      applySelectionViewState()
+    
+    func drawingDidUpdateShape(_ shape: Shape) {
+        redrawAbsolutelyEverything()
+        applyToolSettingsChanges()
     }
-  }
+    
+    func drawingDidRemoveShape(_ shape: Shape) {
+        redrawAbsolutelyEverything()
+        if shape === toolSettings.selectedShape {
+            toolSettings.selectedShape = nil
+            applySelectionViewState()
+        }
+    }
 }
 
 extension DrawsanaView: ToolSettingsDelegate {
-  func toolSettings(
-    _ toolSettings: ToolSettings,
-    didSetSelectedShape selectedShape: ShapeSelectable?)
-  {
-    applySelectionViewState()
-    // DrawingView's delegate might set this, so notify the tool if it happens
-    tool?.apply(context: toolOperationContext, userSettings: userSettings)
-  }
-
-  func toolSettings(
-    _ toolSettings: ToolSettings,
-    didSetInteractiveView interactiveView: UIView?,
-    oldValue: UIView?)
-  {
-    guard oldValue !== interactiveView else { return }
-    oldValue?.removeFromSuperview()
-    if let interactiveView = interactiveView {
-      interactiveOverlayContainerView.addSubview(interactiveView)
+    func toolSettings(
+        _ toolSettings: ToolSettings,
+        didSetSelectedShape selectedShape: ShapeSelectable?)
+    {
+        applySelectionViewState()
+        // DrawingView's delegate might set this, so notify the tool if it happens
+        tool?.apply(context: toolOperationContext, userSettings: userSettings)
     }
-  }
-
-  func toolSettings(
-    _ toolSettings: ToolSettings,
-    didSetIsPersistentBufferDirty isPersistentBufferDirty: Bool)
-  {
-    // no-op; handled during tool operation
-  }
+    
+    func toolSettings(
+        _ toolSettings: ToolSettings,
+        didSetInteractiveView interactiveView: UIView?,
+        oldValue: UIView?)
+    {
+        guard oldValue !== interactiveView else { return }
+        oldValue?.removeFromSuperview()
+        if let interactiveView = interactiveView {
+            interactiveOverlayContainerView.addSubview(interactiveView)
+        }
+    }
+    
+    func toolSettings(
+        _ toolSettings: ToolSettings,
+        didSetIsPersistentBufferDirty isPersistentBufferDirty: Bool)
+    {
+        // no-op; handled during tool operation
+    }
 }
 
 extension DrawsanaView: UserSettingsDelegate {
